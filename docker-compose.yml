@@ -1,0 +1,12 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./app:/app/app
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=sqlite:///./data/evidence.db
