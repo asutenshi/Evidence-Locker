@@ -29,7 +29,7 @@ class EvidenceCompetency(Base):
     __tablename__ = "evidence_competencies"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
-    evidence_id = Mapped[uuid.UUID] = mapped_column(ForeignKey("evidence_records.id"))
+    evidence_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("evidence_records.id"))
     competency_id: Mapped[str] = mapped_column(String, index=True)
     proposed_by: Mapped[str] = mapped_column(String)
 
