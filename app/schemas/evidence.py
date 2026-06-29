@@ -34,8 +34,8 @@ class XAPIStatement(BaseModel):
     actor: Actor
     verb: Verb
     object: ObjectBase
-    context = Optional[Dict[str, Any]] = None
-    timestamp = datetime
+    context: Optional[Dict[str, Any]] = None
+    timestamp: datetime
 
 
 class EvidenceResponce(BaseModel):
