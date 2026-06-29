@@ -1,10 +1,10 @@
-from datetime import datetime, timezone
 import uuid
-from sqlalchemy import String, ForeignKey, DateTime
+from datetime import datetime, timezone
+
+from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.db.database import Base
-
-
 
 
 class EvindenceRecord(Base):
@@ -20,10 +20,12 @@ class EvindenceRecord(Base):
     # Статус может быть draft, pending, reviewed, rejected
     review_status: Mapped[str] = mapped_column(String, default="pending")
     reviewed_by: Mapped[str] = mapped_column(String, default=0)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda:datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
 
     competencies = relationship("EvidenceCompetency", back_populates="evidence")
-  
+
 
 class EvidenceCompetency(Base):
     __tablename__ = "evidence_competencies"
