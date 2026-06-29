@@ -8,12 +8,6 @@ os.makedirs("./data", exist_ok=True)
 
 Base.metadata.create_all(bind=engine)
 
-from app.db.database import Base, engine
-
-os.makedirs("./data", exist_ok=True)
-
-Base.metadata.create_all(bind=engine)
-
 app = FastAPI(title="Practice Project API")
 
 
