@@ -13,6 +13,10 @@
 | `verb_id` | String | URI глагола (например, `http://adlnet.gov/expapi/verbs/completed`). |
 | `object_id` | String | URI объекта (например, ID курса или теста). |
 | `timestamp` | DateTime | Время, когда произошло событие (из `timestamp` xAPI). |
+| `source_system` | String | Название внешней системы (например, Git, Redmine). Извлекается из расширений. |
+| `source_type` | String | Тип источника (например, commit, task). Извлекается из расширений. |
+| `context_id` | String | Идентификатор проекта или курса. Извлекается из context xAPI. |
+| `note` | Text | Короткий текстовый фрагмент или пояснение (nullable). |
 | `raw_data` | JSON | Вся остальная информация из xAPI Statement (context, definition и т.д.). |
 | `review_status` | Enum | Статус подтверждения (`draft`, `pending`, `reviewed`, `rejected`). |
 | `reviewed_by` | String | Идентификатор проверяющего (в MVP заполняется `0` при успехе). |
