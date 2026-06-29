@@ -1,7 +1,8 @@
 import os
+
 from fastapi import FastAPI
-from app.db.database import engine, Base
-from app.db import models
+
+from app.db.database import Base, engine
 
 os.makedirs("./data", exist_ok=True)
 
