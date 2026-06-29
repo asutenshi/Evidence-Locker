@@ -97,3 +97,17 @@ class EvidenceResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class ReviewRequest(BaseModel):
+    """
+    Схема входящего запроса на смену статуса свидетельства.
+    """
+    status: str = Field(
+        ...,
+        description="Новый статус: reviewed или rejected",
+    )
+    note: Optional[str] = Field(
+        None,
+        description="Комментарий преподавателя (опционально)",
+    )
