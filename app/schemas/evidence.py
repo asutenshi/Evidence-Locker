@@ -4,6 +4,8 @@ from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, Field
 
+from app.db.models import ReviewStatus
+
 
 class Account(BaseModel):
     name: str = Field(..., min_length=1, description="Имя студента")
@@ -45,14 +47,17 @@ class EvidenceResponce(BaseModel):
 
     id: uuid.UUID
     actor_id: str
+    verb_id: str
+    object_id: str
+    timestamp: datetime
     source_system: str
     source_type: str
-    evidence_link: str
-    context: Optional[str] = None
-    timestamp: datetime
-    review_status: str
+    context_id: str
+    note: Optional[str] = None
+    raw_data: Optional[Dict[str, Any]] = None
+    review_status: ReviewStatus
     reviewed_by: str
-    created_at: datetime
+    stored: datetime
 
     class Config:
         # Эта настройка говорит Pydantic, что данные будут приходить
