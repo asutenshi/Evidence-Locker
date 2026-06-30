@@ -3,8 +3,7 @@ from datetime import datetime
 from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, Field, model_validator
-
-from app.db.models import ReviewStatus
+from app.db.models import ReviewStatus, CompetencyStatus
 
 
 class Account(BaseModel):
@@ -103,3 +102,19 @@ class EvidenceResponse(BaseModel):
 class ReviewRequest(BaseModel):
     status: ReviewStatus = Field(..., description="Статус ревью")
     note: Optional[str] = Field(None, description="Заметка преподавателя")
+
+class CompetencyLinkRequest(BaseModel):
+    competency_id: str = Field(..., description="Внешний ID компетенции")
+
+class CompetencyLinkResponse(BaseModel):
+    id: uuid.UUID
+    evidence_id: uuid.UUID
+    competency_id: str
+    proposed_by: str
+    status: CompetencyStatus
+    reviewed_by: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
