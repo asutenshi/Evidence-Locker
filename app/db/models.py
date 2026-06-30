@@ -1,9 +1,9 @@
 import enum
 import uuid
+import enum
 from datetime import datetime, timezone
 
-from sqlalchemy import JSON, DateTime, ForeignKey, String, Text
-from sqlalchemy import Enum as SQLEnum
+from sqlalchemy import DateTime, ForeignKey, String, Text, JSON, Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
@@ -15,13 +15,11 @@ class ReviewStatus(str, enum.Enum):
     reviewed = "reviewed"
     rejected = "rejected"
 
-
 class CompetencyStatus(str, enum.Enum):
     pending = "pending"
     approved = "approved"
     rejected = "rejected"
     unlinked = "unlinked"
-
 
 class EvidenceRecord(Base):
     __tablename__ = "evidence_records"
@@ -61,8 +59,8 @@ class EvidenceCompetency(Base):
         DateTime, default=lambda: datetime.now(timezone.utc)
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc),
+        DateTime, 
+        default=lambda: datetime.now(timezone.utc), 
+        onupdate=lambda: datetime.now(timezone.utc)
     )
     evidence = relationship("EvidenceRecord", back_populates="competencies")
