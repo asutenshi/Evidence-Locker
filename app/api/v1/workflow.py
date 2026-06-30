@@ -7,9 +7,9 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from app.api.dependencies import get_db
-from app.db.models import EvidenceCompetency, EvidenceRecord, ReviewStatus
-from app.schemas.evidence import EvidenceResponse, ReviewRequest
+from app.api.dependencies import get_db, verify_teacher_or_collector_token
+from app.db.models import EvidenceCompetency, EvidenceRecord, ReviewStatus, CompetencyStatus
+from app.schemas.evidence import EvidenceResponse, ReviewRequest, CompetencyLinkRequest, CompetencyLinkResponse
 
 router = APIRouter(prefix="/api/v1", tags=["Workflow"])
 
@@ -91,3 +91,39 @@ def review_evidence(
     logger.info(json.dumps(log_event))
 
     return {"message": "Статус успешно обновлен", "status": payload.status}
+
+
+@router.post("/evidences/{evidence_id}/competencies", response_model=CompetencyLinkResponse, status_code=201)
+def link_competency(
+    evidence_id: uuid.UUID,
+    payload: CompetencyLinkRequest,
+    role: str = Depends(verify_teacher_or_collector_token),
+    db: Session = Depends(get_db),
+):
+    """
+    Привязка компетенции к свидетельству.
+    """
+    evidence = db.query(EvidenceRecord).filter(EvidenceRecord.id == evidence_id).first()
+    if not evidence:
+        raise HTTPException(status_code=404, detail="Свидетельство не найдено")
+    if role == "teacher":
+        proposed_by = "teacher"
+        status = CompetencyStatus.approved
+        reviewed_by = "0"
+    else: 
+        proposed_by = "collector"
+        status = CompetencyStatus.pending
+        reviewed_by = None
+    new_link = EvidenceCompetency(
+        evidence_id=evidence_id,
+        competency_id=payload.competency_id,
+        proposed_by=proposed_by,
+        status=status,
+        reviewed_by=reviewed_by
+    )
+
+    db.add(new_link)
+    db.commit()
+    db.refresh(new_link)
+    
+    return new_link
