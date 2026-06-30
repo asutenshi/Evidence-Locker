@@ -103,6 +103,7 @@ class ReviewRequest(BaseModel):
     """
     Схема входящего запроса на смену статуса свидетельства.
     """
+
     status: str = Field(
         ...,
         description="Новый статус: reviewed или rejected",
