@@ -54,6 +54,7 @@ class ObjectBase(BaseModel):
 
 
 class XAPIStatement(BaseModel):
+    id: uuid.UUID = Field(..., description="Уникальный идентификатор Statement")
     actor: Actor
     verb: Verb
     object: ObjectBase
