@@ -227,3 +227,4 @@ __marimo__/
 uv.lock
 
 data/*.db
+.agents
