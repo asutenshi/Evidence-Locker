@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_db
-from app.db.models import EvidenceCompetency, EvidenceRecord
+from app.db.models import EvidenceCompetency, EvidenceRecord, ReviewStatus
 from app.schemas.evidence import EvidenceResponse
 
 router = APIRouter(prefix="/api/v1", tags=["Workflow"])
@@ -16,8 +16,8 @@ def get_evidences(
     verb_id: Optional[str] = Query(None, description="Фильтр по URI глагола"),
     object_id: Optional[str] = Query(None, description="Фильтр по URI объекта"),
     competency_id: Optional[str] = Query(None, description="Фильтр по ID компетенции"),
-    review_status: Optional[str] = Query(
-        None, description="Фильтр по статусу (pending/reviewed)"
+    review_status: Optional[ReviewStatus] = Query(
+        None, description="Фильтр по статусу"
     ),
     source_system: Optional[str] = Query(None, description="Фильтр по источнику"),
     context_id: Optional[str] = Query(None, description="Фильтр по ID контекста"),
