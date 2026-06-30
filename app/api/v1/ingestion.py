@@ -4,6 +4,7 @@ import logging
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
+from app.api.dependencies import verify_collector_token
 from app.db.database import SessionLocal
 from app.db.models import EvidenceRecord, ReviewStatus
 from app.schemas.evidence import EvidenceResponse, XAPIStatement
@@ -27,6 +28,7 @@ def get_db():
     response_model=EvidenceResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Прием xAPI Statement",
+    dependencies=[Depends(verify_collector_token)],
 )
 def ingest_evidence(statement: XAPIStatement, db: Session = Depends(get_db)):
     ctx = statement.context or {}
