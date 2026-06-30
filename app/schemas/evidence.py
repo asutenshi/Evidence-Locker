@@ -100,15 +100,5 @@ class EvidenceResponse(BaseModel):
 
 
 class ReviewRequest(BaseModel):
-    """
-    Схема входящего запроса на смену статуса свидетельства.
-    """
-
-    status: str = Field(
-        ...,
-        description="Новый статус: reviewed или rejected",
-    )
-    note: Optional[str] = Field(
-        None,
-        description="Комментарий преподавателя (опционально)",
-    )
+    status: ReviewStatus = Field(..., description="Статус ревью")
+    note: Optional[str] = Field(None, description="Заметка преподавателя")
