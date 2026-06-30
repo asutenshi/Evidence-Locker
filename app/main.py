@@ -13,6 +13,7 @@ app = FastAPI(title="Practice Project API")
 
 app.include_router(workflow_router)
 
+
 @app.get("/")
 def read_root():
     return {"message": "API is running"}
