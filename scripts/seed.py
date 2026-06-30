@@ -1,4 +1,5 @@
 import random
+import uuid
 from datetime import datetime, timezone
 
 # Eсли запускаешь не из корня, а прямо из папки scripts
@@ -21,6 +22,7 @@ def seed_data():
 
     for i in range(1, 16):
         raw_data = {
+            "id": str(uuid.uuid4()),
             "actor": {"account": {"name": f"student_{random.randint(1, 5)}"}},
             "verb": {"id": "http://adlnet.gov/expapi/verbs/completed"},
             "object": {
