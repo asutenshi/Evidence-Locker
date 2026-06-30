@@ -1,5 +1,5 @@
 import json
-import sys
+import logging
 
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
@@ -7,6 +7,9 @@ from sqlalchemy.orm import Session
 from app.db.database import SessionLocal
 from app.db.models import EvidenceRecord, ReviewStatus
 from app.schemas.evidence import EvidenceResponse, XAPIStatement
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 router = APIRouter(prefix="/api/v1", tags=["Ingestion"])
 
@@ -56,7 +59,6 @@ def ingest_evidence(statement: XAPIStatement, db: Session = Depends(get_db)):
         "source_system": db_record.source_system,
     }
 
-    sys.stdout.write(json.dumps(log_event) + "\n")
-    sys.stdout.flush()
+    logger.info(json.dumps(log_event))
 
     return db_record

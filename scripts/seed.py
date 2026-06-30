@@ -1,6 +1,6 @@
 import random
-from datetime import datetime, timezone
 import uuid
+from datetime import datetime, timezone
 
 # Eсли запускаешь не из корня, а прямо из папки scripts
 # sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
