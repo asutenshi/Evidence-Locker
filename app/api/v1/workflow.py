@@ -122,8 +122,13 @@ def link_competency(
         reviewed_by=reviewed_by
     )
 
-    db.add(new_link)
-    db.commit()
-    db.refresh(new_link)
-    
+    log_event = {
+        "event": "evidence.linked",
+        "evidence_id": str(evidence_id),
+        "competency_id": payload.competency_id,
+        "proposed_by": proposed_by,
+        "status": status.value
+    }
+    logger.info(json.dumps(log_event))
+
     return new_link
