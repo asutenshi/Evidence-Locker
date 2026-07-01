@@ -3,7 +3,8 @@ from datetime import datetime
 from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, Field, model_validator
-from app.db.models import ReviewStatus, CompetencyStatus
+
+from app.db.models import CompetencyStatus, ReviewStatus
 
 
 class Account(BaseModel):

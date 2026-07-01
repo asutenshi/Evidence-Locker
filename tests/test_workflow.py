@@ -3,13 +3,44 @@ from datetime import datetime, timezone
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
-from app.main import app
 from app.api.dependencies import (
-    get_teacher_token,
     get_collector_token,
+    get_db,
     get_student_token,
+    get_teacher_token,
 )
+from app.db.database import Base
+from app.main import app
+
+SQLALCHEMY_DATABASE_URL = "sqlite:///./data/test.db"
+
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+)
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+
+def override_get_db():
+    db = TestingSessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+app.dependency_overrides[get_db] = override_get_db
+
+
+@pytest.fixture(autouse=True)
+def setup_database():
+    """Создает чистые таблицы перед каждым тестом и удаляет после."""
+    Base.metadata.create_all(bind=engine)
+    yield
+    Base.metadata.drop_all(bind=engine)
+
 
 client = TestClient(app)
 
@@ -31,7 +62,7 @@ def student_headers():
 
 @pytest.fixture
 def test_evidence_id(collector_headers):
-    """Вспомогательная фикстура: создает тестовое свидетельство в БД и возвращает его ID"""
+    """Вспомогательная фикстура: создает тестовое свидетельство в БД."""
     payload = {
         "id": str(uuid.uuid4()),
         "actor": {"account": {"name": "test_student"}},
@@ -56,9 +87,8 @@ def test_get_evidences_unauthorized():
 
 
 def test_get_evidences_wrong_token():
-    response = client.get(
-        "/api/v1/evidences", headers={"Authorization": "Bearer hacker_token"}
-    )
+    headers = {"Authorization": "Bearer hacker_token"}
+    response = client.get("/api/v1/evidences", headers=headers)
     assert response.status_code == 403
 
 
@@ -69,15 +99,20 @@ def test_get_evidences_authorized(teacher_headers):
 
 
 def test_get_evidences_with_filtration(teacher_headers, test_evidence_id):
-    response = client.get("/api/v1/evidences?review_status=pending", headers=teacher_headers)
-    
+    response = client.get(
+        "/api/v1/evidences?review_status=pending", headers=teacher_headers
+    )
+
     assert response.status_code == 200
     data = response.json()
-    
+
     assert any(ev["id"] == test_evidence_id for ev in data)
-    
-    response_empty = client.get("/api/v1/evidences?review_status=rejected", headers=teacher_headers)
+
+    response_empty = client.get(
+        "/api/v1/evidences?review_status=rejected", headers=teacher_headers
+    )
     assert not any(ev["id"] == test_evidence_id for ev in response_empty.json())
+
 
 # ТЕСТЫ PATCH /review
 
@@ -87,7 +122,8 @@ def test_patch_review_auth_and_logic(
 ):
     # 1. Без токена -> 401
     res1 = client.patch(
-        f"/api/v1/evidences/{test_evidence_id}/review", json={"status": "reviewed"}
+        f"/api/v1/evidences/{test_evidence_id}/review",
+        json={"status": "reviewed"},
     )
     assert res1.status_code == 401
 
@@ -106,7 +142,7 @@ def test_patch_review_auth_and_logic(
         headers=teacher_headers,
     )
     assert res3.status_code == 200
-    assert res3.json()["status"] == "reviewed"
+    assert res3.json()["review_status"] == "reviewed"
 
 
 # ТЕСТЫ POST /competencies

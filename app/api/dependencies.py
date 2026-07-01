@@ -2,6 +2,7 @@ import os
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+
 from app.db.database import SessionLocal
 
 security = HTTPBearer()
