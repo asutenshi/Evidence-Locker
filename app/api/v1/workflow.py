@@ -7,7 +7,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from app.api.dependencies import get_db, verify_teacher_or_collector_token
+from app.api.dependencies import get_db, verify_teacher_or_collector_token, verify_teacher_token
 from app.db.models import EvidenceCompetency, EvidenceRecord, ReviewStatus, CompetencyStatus
 from app.schemas.evidence import EvidenceResponse, ReviewRequest, CompetencyLinkRequest, CompetencyLinkResponse
 
