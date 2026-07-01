@@ -3,7 +3,8 @@ from datetime import datetime
 from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, Field, model_validator
-from app.db.models import ReviewStatus, CompetencyStatus
+
+from app.db.models import CompetencyStatus, ReviewStatus
 
 
 class Account(BaseModel):
@@ -72,8 +73,17 @@ class XAPIStatement(BaseModel):
         ctx = self.context or {}
         extensions = ctx.get("extensions", {})
 
-        self.source_system = extensions.get("source_system", "unknown_system")
-        self.source_type = extensions.get("source_type", self.object.definition.type)
+        if "source_system" not in extensions:
+            raise ValueError(
+                "Обязательное поле 'source_system' отсутствует в context.extensions"
+            )
+        if "source_type" not in extensions:
+            raise ValueError(
+                "Обязательное поле 'source_type' отсутствует в context.extensions"
+            )
+
+        self.source_system = extensions["source_system"]
+        self.source_type = extensions["source_type"]
 
         self.context_id = ctx.get("context_id", ctx.get("project", "default_context"))
 
@@ -103,8 +113,10 @@ class ReviewRequest(BaseModel):
     status: ReviewStatus = Field(..., description="Статус ревью")
     note: Optional[str] = Field(None, description="Заметка преподавателя")
 
+
 class CompetencyLinkRequest(BaseModel):
     competency_id: str = Field(..., description="Внешний ID компетенции")
+
 
 class CompetencyLinkResponse(BaseModel):
     id: uuid.UUID
