@@ -68,6 +68,17 @@ def test_get_evidences_authorized(teacher_headers):
     assert isinstance(response.json(), list)
 
 
+def test_get_evidences_with_filtration(teacher_headers, test_evidence_id):
+    response = client.get("/api/v1/evidences?review_status=pending", headers=teacher_headers)
+    
+    assert response.status_code == 200
+    data = response.json()
+    
+    assert any(ev["id"] == test_evidence_id for ev in data)
+    
+    response_empty = client.get("/api/v1/evidences?review_status=rejected", headers=teacher_headers)
+    assert not any(ev["id"] == test_evidence_id for ev in response_empty.json())
+
 # ТЕСТЫ PATCH /review
 
 
