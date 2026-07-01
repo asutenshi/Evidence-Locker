@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help install test run run-demo docker-build docker-up
+.PHONY: help install test run run-demo docker-build docker-up docker-down
 
 help:
 	@echo "Available commands:"
@@ -10,6 +10,7 @@ help:
 	@echo "  make run-demo     - Run the demo git collector script"
 	@echo "  make docker-build - Build Docker images"
 	@echo "  make docker-up    - Start Docker containers in detached mode"
+	@echo "  make docker-down  - Stop and remove Docker containers"
 	@echo "  make help         - Show this help message"
 
 install:
@@ -25,7 +26,10 @@ run-demo:
 	uv run python scripts/demo_git_collector.py
 
 docker-build:
-	docker-compose build
+	sudo docker compose build
 
 docker-up:
-	docker-compose up -d
+	sudo docker compose up -d
+
+docker-down:
+	sudo docker compose down
