@@ -14,6 +14,7 @@ def get_db():
     finally:
         db.close()
 
+
 def get_teacher_token() -> str:
     return os.getenv("TEACHER_TOKEN", "secret_teacher_token")
 
