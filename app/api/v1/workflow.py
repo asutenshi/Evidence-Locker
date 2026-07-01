@@ -78,6 +78,7 @@ def get_evidences(
 def review_evidence(
     evidence_id: uuid.UUID,
     payload: ReviewRequest,
+    _token: str = Depends(verify_teacher_token),
     db: Session = Depends(get_db),
 ):
     """
