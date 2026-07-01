@@ -7,9 +7,23 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from app.api.dependencies import get_db, verify_teacher_or_collector_token, verify_teacher_token
-from app.db.models import EvidenceCompetency, EvidenceRecord, ReviewStatus, CompetencyStatus
-from app.schemas.evidence import EvidenceResponse, ReviewRequest, CompetencyLinkRequest, CompetencyLinkResponse
+from app.api.dependencies import (
+    get_db,
+    verify_teacher_or_collector_token,
+    verify_teacher_token,
+)
+from app.db.models import (
+    EvidenceCompetency,
+    EvidenceRecord,
+    ReviewStatus,
+    CompetencyStatus,
+)
+from app.schemas.evidence import (
+    EvidenceResponse,
+    ReviewRequest,
+    CompetencyLinkRequest,
+    CompetencyLinkResponse,
+)
 
 router = APIRouter(prefix="/api/v1", tags=["Workflow"])
 
@@ -32,6 +46,7 @@ def get_evidences(
     ),
     source_system: Optional[str] = Query(None, description="Фильтр по источнику"),
     context_id: Optional[str] = Query(None, description="Фильтр по ID контекста"),
+    _token: str = Depends(verify_teacher_token),
     db: Session = Depends(get_db),
 ):
     """
@@ -82,7 +97,7 @@ def review_evidence(
     db.commit()
 
     log_event = {
-        "event": f"evidence.{payload.status.value}", 
+        "event": f"evidence.{payload.status.value}",
         "evidence_id": str(record.id),
         "actor_id": record.actor_id,
         "note": record.note,
@@ -93,7 +108,11 @@ def review_evidence(
     return {"message": "Статус успешно обновлен", "status": payload.status}
 
 
-@router.post("/evidences/{evidence_id}/competencies", response_model=CompetencyLinkResponse, status_code=201)
+@router.post(
+    "/evidences/{evidence_id}/competencies",
+    response_model=CompetencyLinkResponse,
+    status_code=201,
+)
 def link_competency(
     evidence_id: uuid.UUID,
     payload: CompetencyLinkRequest,
@@ -110,7 +129,7 @@ def link_competency(
         proposed_by = "teacher"
         status = CompetencyStatus.approved
         reviewed_by = "0"
-    else: 
+    else:
         proposed_by = "collector"
         status = CompetencyStatus.pending
         reviewed_by = None
@@ -119,19 +138,19 @@ def link_competency(
         competency_id=payload.competency_id,
         proposed_by=proposed_by,
         status=status,
-        reviewed_by=reviewed_by
+        reviewed_by=reviewed_by,
     )
 
     db.add(new_link)
     db.commit()
     db.refresh(new_link)
-    
+
     log_event = {
         "event": "evidence.linked",
         "evidence_id": str(evidence_id),
         "competency_id": payload.competency_id,
         "proposed_by": proposed_by,
-        "status": status.value
+        "status": status.value,
     }
     logger.info(json.dumps(log_event))
 
