@@ -103,8 +103,10 @@ class ReviewRequest(BaseModel):
     status: ReviewStatus = Field(..., description="Статус ревью")
     note: Optional[str] = Field(None, description="Заметка преподавателя")
 
+
 class CompetencyLinkRequest(BaseModel):
     competency_id: str = Field(..., description="Внешний ID компетенции")
+
 
 class CompetencyLinkResponse(BaseModel):
     id: uuid.UUID
