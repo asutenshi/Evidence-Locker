@@ -224,7 +224,5 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-uv.lock
-
 data/*.db
 .agents
