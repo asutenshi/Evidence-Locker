@@ -2,9 +2,17 @@ import os
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from app.db.database import SessionLocal
 
 security = HTTPBearer()
 
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 def get_teacher_token() -> str:
     return os.getenv("TEACHER_TOKEN", "secret_teacher_token")

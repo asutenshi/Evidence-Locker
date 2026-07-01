@@ -2,7 +2,7 @@ import os
 
 from fastapi import FastAPI
 
-from app.api.v1 import ingestion
+from app.api.v1 import ingestion, workflow
 from app.db.database import Base, engine
 
 os.makedirs("./data", exist_ok=True)
@@ -13,6 +13,7 @@ app = FastAPI(
 )
 
 app.include_router(ingestion.router)
+app.include_router(workflow.router)
 
 
 @app.get("/")
