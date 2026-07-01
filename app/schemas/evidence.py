@@ -98,3 +98,8 @@ class EvidenceResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class ReviewRequest(BaseModel):
+    status: ReviewStatus = Field(..., description="Статус ревью")
+    note: Optional[str] = Field(None, description="Заметка преподавателя")
