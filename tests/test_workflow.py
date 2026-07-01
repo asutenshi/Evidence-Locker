@@ -14,9 +14,16 @@ def teacher_headers():
 
 
 def test_get_evidences_unauthorized():
-    """Тест: получение списка без токена должно возвращать ошибку 403"""
+    """Тест: получение списка вообще без токена должно возвращать ошибку 401"""
     response = client.get("/api/v1/evidences")
-    # FastAPI возвращает 403 Forbidden, если Depends не пропустил
+    assert response.status_code == 401
+
+
+def test_get_evidences_wrong_token():
+    """Тест: получение списка с неверным токеном должно возвращать ошибку 403"""
+    response = client.get(
+        "/api/v1/evidences", headers={"Authorization": "Bearer fake_hacker_token"}
+    )
     assert response.status_code == 403
 
 
