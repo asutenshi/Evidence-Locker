@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 from pydantic import ValidationError
@@ -16,7 +16,7 @@ def test_xapi_statement_valid():
             "id": "http://example.com/activities/course-1",
             "definition": {"type": "http://adlnet.gov/expapi/activities/course"},
         },
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "context": {
             "extensions": {"source_system": "lms_alpha", "source_type": "moodle"}
         },
@@ -37,7 +37,7 @@ def test_xapi_statement_missing_source_system():
             "id": "http://example.com/activities/course-1",
             "definition": {"type": "http://adlnet.gov/expapi/activities/course"},
         },
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "context": {"extensions": {"source_type": "moodle"}},
     }
 
@@ -56,7 +56,7 @@ def test_xapi_statement_missing_source_type():
             "id": "http://example.com/activities/course-1",
             "definition": {"type": "http://adlnet.gov/expapi/activities/course"},
         },
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "context": {"extensions": {"source_system": "lms_alpha"}},
     }
 
@@ -75,7 +75,7 @@ def test_xapi_statement_invalid_actor():
             "id": "http://example.com/activities/course-1",
             "definition": {"type": "http://adlnet.gov/expapi/activities/course"},
         },
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "context": {
             "extensions": {"source_system": "lms_alpha", "source_type": "moodle"}
         },

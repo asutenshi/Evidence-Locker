@@ -65,8 +65,10 @@ def get_evidences(
     if context_id:
         query = query.filter(EvidenceRecord.context_id == context_id)
     if competency_id:
-        query = query.join(EvidenceCompetency).filter(
-            EvidenceCompetency.competency_id == competency_id
+        query = (
+            query.join(EvidenceCompetency)
+            .filter(EvidenceCompetency.competency_id == competency_id)
+            .distinct()
         )
 
     return query.all()

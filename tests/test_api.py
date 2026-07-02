@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.api.dependencies import get_collector_token, get_teacher_token
 
@@ -15,7 +15,7 @@ def test_ingest_evidence_valid(client):
             "id": "http://example.com/activities/course-1",
             "definition": {"type": "http://adlnet.gov/expapi/activities/course"},
         },
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "context": {
             "extensions": {"source_system": "lms_alpha", "source_type": "moodle"}
         },
@@ -43,7 +43,7 @@ def test_ingest_evidence_invalid_missing_fields(client):
             "id": "http://example.com/activities/course-1",
             "definition": {"type": "http://adlnet.gov/expapi/activities/course"},
         },
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "context": {
             "extensions": {
                 # missing source_system and source_type
@@ -68,7 +68,7 @@ def test_ingest_evidence_unauthorized(client):
             "id": "http://example.com/activities/course-1",
             "definition": {"type": "http://adlnet.gov/expapi/activities/course"},
         },
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "context": {
             "extensions": {"source_system": "lms_alpha", "source_type": "moodle"}
         },

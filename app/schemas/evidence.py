@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.db.models import CompetencyStatus, ReviewStatus
 
@@ -105,8 +105,7 @@ class EvidenceResponse(BaseModel):
     reviewed_by: str
     stored: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ReviewRequest(BaseModel):
@@ -128,5 +127,4 @@ class CompetencyLinkResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

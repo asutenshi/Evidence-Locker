@@ -157,3 +157,33 @@ def test_post_competencies_auth_and_logic(
     assert res4.status_code == 201
     assert res4.json()["proposed_by"] == "teacher"
     assert res4.json()["status"] == "approved"
+
+
+def test_get_evidences_filtration_competency_distinct(
+    client, teacher_headers, collector_headers, test_evidence_id
+):
+    # 1. Привязываем одну и ту же компетенцию дважды (сначала collector, потом teacher)
+    res_c = client.post(
+        f"/api/v1/evidences/{test_evidence_id}/competencies",
+        json={"competency_id": "distinct_test_comp"},
+        headers=collector_headers,
+    )
+    assert res_c.status_code == 201
+
+    res_t = client.post(
+        f"/api/v1/evidences/{test_evidence_id}/competencies",
+        json={"competency_id": "distinct_test_comp"},
+        headers=teacher_headers,
+    )
+    assert res_t.status_code == 201
+
+    # 2. Делаем GET запрос с фильтрацией по этой компетенции
+    response = client.get(
+        "/api/v1/evidences?competency_id=distinct_test_comp", headers=teacher_headers
+    )
+    assert response.status_code == 200
+    data = response.json()
+
+    # Ожидаем, что вернется ровно 1 запись (благодаря .distinct()), а не 2
+    assert len(data) == 1
+    assert data[0]["id"] == test_evidence_id
