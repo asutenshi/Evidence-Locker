@@ -4,8 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from app.api.v1.ingestion import get_db as get_db_ingestion
-from app.api.v1.workflow import get_db as get_db_workflow
+from app.api.dependencies import get_db
 from app.db.database import Base
 from app.main import app
 
@@ -28,8 +27,7 @@ def override_get_db():
         db.close()
 
 
-app.dependency_overrides[get_db_ingestion] = override_get_db
-app.dependency_overrides[get_db_workflow] = override_get_db
+app.dependency_overrides[get_db] = override_get_db
 
 
 @pytest.fixture(scope="module")

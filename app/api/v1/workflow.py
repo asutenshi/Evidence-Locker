@@ -4,7 +4,7 @@ import sys
 import uuid
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import (
@@ -25,14 +25,14 @@ from app.schemas.evidence import (
     ReviewRequest,
 )
 
-router = APIRouter(prefix="/api/v1", tags=["Workflow"])
-
 logger = logging.getLogger("evidence_locker")
 logger.setLevel(logging.INFO)
 handler = logging.StreamHandler(sys.stdout)
 handler.setFormatter(logging.Formatter("%(message)s"))
 if not logger.handlers:
     logger.addHandler(handler)
+
+router = APIRouter(prefix="/api/v1", tags=["Workflow"])
 
 
 @router.get("/evidences", response_model=list[EvidenceResponse])
@@ -49,9 +49,7 @@ def get_evidences(
     _token: str = Depends(verify_teacher_token),
     db: Session = Depends(get_db),
 ):
-    """
-    Получение списка свидетельств с возможностью фильтрации.
-    """
+    """Получение списка свидетельств с возможностью фильтрации."""
     query = db.query(EvidenceRecord)
 
     if actor_id:
@@ -74,45 +72,49 @@ def get_evidences(
     return query.all()
 
 
-@router.patch("/evidences/{evidence_id}/review")
+@router.patch("/evidences/{evidence_id}/review", response_model=EvidenceResponse)
 def review_evidence(
     evidence_id: uuid.UUID,
     payload: ReviewRequest,
     _token: str = Depends(verify_teacher_token),
     db: Session = Depends(get_db),
 ):
-    """
-    Изменение статуса свидетельства (ревью преподавателем).
-    """
-    record = db.query(EvidenceRecord).filter(EvidenceRecord.id == evidence_id).first()
-
-    if not record:
+    """Изменение статуса свидетельства (ревью преподавателем)."""
+    evidence = db.query(EvidenceRecord).filter(EvidenceRecord.id == evidence_id).first()
+    if not evidence:
         raise HTTPException(status_code=404, detail="Свидетельство не найдено")
 
-    record.review_status = payload.status
-    record.reviewed_by = "0"
+    evidence.review_status = payload.status
+    evidence.reviewed_by = "0"
 
     if payload.note is not None:
-        record.note = payload.note
+        if payload.note.strip() == "":
+            evidence.note = None
+        else:
+            evidence.note = payload.note
 
     db.commit()
+    db.refresh(evidence)
 
+    event_name = (
+        "evidence.reviewed"
+        if evidence.review_status == ReviewStatus.reviewed
+        else "evidence.rejected"
+    )
     log_event = {
-        "event": f"evidence.{payload.status.value}",
-        "evidence_id": str(record.id),
-        "actor_id": record.actor_id,
-        "note": record.note,
+        "event": event_name,
+        "evidence_id": str(evidence.id),
+        "status": evidence.review_status.value,
     }
-
     logger.info(json.dumps(log_event))
 
-    return {"message": "Статус успешно обновлен", "status": payload.status}
+    return evidence
 
 
 @router.post(
     "/evidences/{evidence_id}/competencies",
     response_model=CompetencyLinkResponse,
-    status_code=201,
+    status_code=status.HTTP_201_CREATED,
 )
 def link_competency(
     evidence_id: uuid.UUID,
@@ -120,39 +122,36 @@ def link_competency(
     role: str = Depends(verify_teacher_or_collector_token),
     db: Session = Depends(get_db),
 ):
-    """
-    Привязка компетенции к свидетельству.
-    """
+    """Привязка компетенции к свидетельству (сборщиком или преподавателем)."""
     evidence = db.query(EvidenceRecord).filter(EvidenceRecord.id == evidence_id).first()
     if not evidence:
         raise HTTPException(status_code=404, detail="Свидетельство не найдено")
+
     if role == "teacher":
+        status_val = CompetencyStatus.approved
         proposed_by = "teacher"
-        status = CompetencyStatus.approved
         reviewed_by = "0"
     else:
+        status_val = CompetencyStatus.pending
         proposed_by = "collector"
-        status = CompetencyStatus.pending
         reviewed_by = None
-    new_link = EvidenceCompetency(
+
+    link = EvidenceCompetency(
         evidence_id=evidence_id,
         competency_id=payload.competency_id,
         proposed_by=proposed_by,
-        status=status,
+        status=status_val,
         reviewed_by=reviewed_by,
     )
-
-    db.add(new_link)
+    db.add(link)
     db.commit()
-    db.refresh(new_link)
+    db.refresh(link)
 
     log_event = {
         "event": "evidence.linked",
         "evidence_id": str(evidence_id),
         "competency_id": payload.competency_id,
-        "proposed_by": proposed_by,
-        "status": status.value,
     }
     logger.info(json.dumps(log_event))
 
-    return new_link
+    return link
