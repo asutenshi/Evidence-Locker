@@ -29,7 +29,10 @@ def seed_data():
                 "id": f"http://github.com/org/repo/commit/mock_commit_{i}",
                 "definition": {"type": "commit"},
             },
-            "context": {"project": f"project_{random.randint(1, 3)}"},
+            "context": {
+                "project": f"project_{random.randint(1, 3)}",
+                "extensions": {"source_system": "seed_script", "source_type": "commit"},
+            },
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
@@ -49,8 +52,8 @@ def seed_data():
             verb_id=statement.verb.id,
             object_id=statement.object.id,
             timestamp=statement.timestamp,
-            source_system="seed_script",
-            source_type=statement.object.definition.type,
+            source_system=statement.source_system,
+            source_type=statement.source_type,
             context_id=context_id,
             note="Сгенерировано автоматически (Seed script)",
             raw_data=raw_data,

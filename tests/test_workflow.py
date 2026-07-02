@@ -2,47 +2,12 @@ import uuid
 from datetime import datetime, timezone
 
 import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 from app.api.dependencies import (
     get_collector_token,
-    get_db,
     get_student_token,
     get_teacher_token,
 )
-from app.db.database import Base
-from app.main import app
-
-SQLALCHEMY_DATABASE_URL = "sqlite:///./data/test.db"
-
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-)
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-
-def override_get_db():
-    db = TestingSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-app.dependency_overrides[get_db] = override_get_db
-
-
-@pytest.fixture(autouse=True)
-def setup_database():
-    """Создает чистые таблицы перед каждым тестом и удаляет после."""
-    Base.metadata.create_all(bind=engine)
-    yield
-    Base.metadata.drop_all(bind=engine)
-
-
-client = TestClient(app)
 
 
 @pytest.fixture
@@ -61,7 +26,7 @@ def student_headers():
 
 
 @pytest.fixture
-def test_evidence_id(collector_headers):
+def test_evidence_id(client, collector_headers):
     """Вспомогательная фикстура: создает тестовое свидетельство в БД."""
     payload = {
         "id": str(uuid.uuid4()),
@@ -72,6 +37,12 @@ def test_evidence_id(collector_headers):
             "definition": {"type": "unit-test"},
         },
         "timestamp": datetime.now(timezone.utc).isoformat(),
+        "context": {
+            "extensions": {
+                "source_system": "test_system",
+                "source_type": "unit-test",
+            }
+        },
     }
     response = client.post("/api/v1/evidences", json=payload, headers=collector_headers)
     assert response.status_code == 201
@@ -81,24 +52,24 @@ def test_evidence_id(collector_headers):
 # ТЕСТЫ GET /evidences
 
 
-def test_get_evidences_unauthorized():
+def test_get_evidences_unauthorized(client):
     response = client.get("/api/v1/evidences")
     assert response.status_code == 401
 
 
-def test_get_evidences_wrong_token():
+def test_get_evidences_wrong_token(client):
     headers = {"Authorization": "Bearer hacker_token"}
     response = client.get("/api/v1/evidences", headers=headers)
     assert response.status_code == 403
 
 
-def test_get_evidences_authorized(teacher_headers):
+def test_get_evidences_authorized(client, teacher_headers):
     response = client.get("/api/v1/evidences", headers=teacher_headers)
     assert response.status_code == 200
     assert isinstance(response.json(), list)
 
 
-def test_get_evidences_with_filtration(teacher_headers, test_evidence_id):
+def test_get_evidences_with_filtration(client, teacher_headers, test_evidence_id):
     response = client.get(
         "/api/v1/evidences?review_status=pending", headers=teacher_headers
     )
@@ -118,7 +89,7 @@ def test_get_evidences_with_filtration(teacher_headers, test_evidence_id):
 
 
 def test_patch_review_auth_and_logic(
-    teacher_headers, collector_headers, test_evidence_id
+    client, teacher_headers, collector_headers, test_evidence_id
 ):
     # 1. Без токена -> 401
     res1 = client.patch(
@@ -149,7 +120,7 @@ def test_patch_review_auth_and_logic(
 
 
 def test_post_competencies_auth_and_logic(
-    teacher_headers, collector_headers, student_headers, test_evidence_id
+    client, teacher_headers, collector_headers, student_headers, test_evidence_id
 ):
     payload = {"competency_id": "teamwork_101"}
 

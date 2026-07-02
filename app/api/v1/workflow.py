@@ -12,7 +12,12 @@ from app.api.dependencies import (
     verify_teacher_or_collector_token,
     verify_teacher_token,
 )
-from app.db.models import EvidenceCompetency, EvidenceRecord, ReviewStatus
+from app.db.models import (
+    CompetencyStatus,
+    EvidenceCompetency,
+    EvidenceRecord,
+    ReviewStatus,
+)
 from app.schemas.evidence import (
     CompetencyLinkRequest,
     CompetencyLinkResponse,
@@ -80,6 +85,7 @@ def review_evidence(
         raise HTTPException(status_code=404, detail="Свидетельство не найдено")
 
     evidence.review_status = payload.status
+    evidence.reviewed_by = "0"
 
     if payload.note is not None:
         if payload.note.strip() == "":
@@ -90,8 +96,13 @@ def review_evidence(
     db.commit()
     db.refresh(evidence)
 
+    event_name = (
+        "evidence.reviewed"
+        if evidence.review_status == ReviewStatus.reviewed
+        else "evidence.rejected"
+    )
     log_event = {
-        "event": "evidence.reviewed",
+        "event": event_name,
         "evidence_id": str(evidence.id),
         "status": evidence.review_status.value,
     }
@@ -117,11 +128,11 @@ def link_competency(
         raise HTTPException(status_code=404, detail="Свидетельство не найдено")
 
     if role == "teacher":
-        status_val = "approved"
+        status_val = CompetencyStatus.approved
         proposed_by = "teacher"
         reviewed_by = "0"
     else:
-        status_val = "pending"
+        status_val = CompetencyStatus.pending
         proposed_by = "collector"
         reviewed_by = None
 
