@@ -187,3 +187,49 @@ def test_get_evidences_filtration_competency_distinct(
     # Ожидаем, что вернется ровно 1 запись (благодаря .distinct()), а не 2
     assert len(data) == 1
     assert data[0]["id"] == test_evidence_id
+
+
+def test_get_evidences_filtration_competency_status(
+    client, teacher_headers, test_evidence_id
+):
+    import uuid
+
+    from app.api.dependencies import get_db
+    from app.db.models import CompetencyStatus, EvidenceCompetency
+    from app.main import app
+
+    db = next(app.dependency_overrides[get_db]())
+    try:
+        # 1. Create one link with rejected status
+        link_rejected = EvidenceCompetency(
+            evidence_id=uuid.UUID(test_evidence_id),
+            competency_id="rejected_comp",
+            proposed_by="teacher",
+            status=CompetencyStatus.rejected,
+        )
+        # 2. Create one link with unlinked status
+        link_unlinked = EvidenceCompetency(
+            evidence_id=uuid.UUID(test_evidence_id),
+            competency_id="unlinked_comp",
+            proposed_by="teacher",
+            status=CompetencyStatus.unlinked,
+        )
+        db.add(link_rejected)
+        db.add(link_unlinked)
+        db.commit()
+    finally:
+        db.close()
+
+    # 3. GET request with rejected_comp filter -> should return 0 results
+    resp_rej = client.get(
+        "/api/v1/evidences?competency_id=rejected_comp", headers=teacher_headers
+    )
+    assert resp_rej.status_code == 200
+    assert len(resp_rej.json()) == 0
+
+    # 4. GET request with unlinked_comp filter -> should return 0 results
+    resp_unl = client.get(
+        "/api/v1/evidences?competency_id=unlinked_comp", headers=teacher_headers
+    )
+    assert resp_unl.status_code == 200
+    assert len(resp_unl.json()) == 0

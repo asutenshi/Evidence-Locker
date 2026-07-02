@@ -67,7 +67,12 @@ def get_evidences(
     if competency_id:
         query = (
             query.join(EvidenceCompetency)
-            .filter(EvidenceCompetency.competency_id == competency_id)
+            .filter(
+                EvidenceCompetency.competency_id == competency_id,
+                EvidenceCompetency.status.in_(
+                    [CompetencyStatus.approved, CompetencyStatus.pending]
+                ),
+            )
             .distinct()
         )
 

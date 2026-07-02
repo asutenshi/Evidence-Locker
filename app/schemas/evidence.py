@@ -50,7 +50,7 @@ class Definition(BaseModel):
 
 class ObjectBase(BaseModel):
     id: str = Field(..., min_length=1, description="Ссылка на артефакт (URL)")
-    definition: Definition
+    definition: Optional[Definition] = None
 
 
 class XAPIStatement(BaseModel):
