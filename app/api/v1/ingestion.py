@@ -57,6 +57,6 @@ def ingest_evidence(statement: XAPIStatement, db: Session = Depends(get_db)):
         "source_system": db_record.source_system,
     }
 
-    logger.info(json.dumps(log_event))
+    logger.info(json.dumps(log_event, ensure_ascii=False))
 
     return db_record

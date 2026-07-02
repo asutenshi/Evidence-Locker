@@ -113,7 +113,7 @@ def review_evidence(
         "evidence_id": str(evidence.id),
         "status": evidence.review_status.value,
     }
-    logger.info(json.dumps(log_event))
+    logger.info(json.dumps(log_event, ensure_ascii=False))
 
     return evidence
 
@@ -159,6 +159,6 @@ def link_competency(
         "evidence_id": str(evidence_id),
         "competency_id": payload.competency_id,
     }
-    logger.info(json.dumps(log_event))
+    logger.info(json.dumps(log_event, ensure_ascii=False))
 
     return link
