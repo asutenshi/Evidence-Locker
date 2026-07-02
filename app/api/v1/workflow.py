@@ -104,7 +104,7 @@ def review_evidence(
         "note": record.note,
     }
 
-    logger.info(json.dumps(log_event))
+    logger.info(json.dumps(log_event, ensure_ascii=False))
 
     return {"message": "Статус успешно обновлен", "status": payload.status}
 
@@ -153,6 +153,6 @@ def link_competency(
         "proposed_by": proposed_by,
         "status": status.value,
     }
-    logger.info(json.dumps(log_event))
+    logger.info(json.dumps(log_event, ensure_ascii=False))
 
     return new_link

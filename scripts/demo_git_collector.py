@@ -64,7 +64,7 @@ def get_last_commit_info():
 def main():
     load_env()
 
-    api_url = os.getenv("API_URL", "http://localhost:8000")
+    api_url = os.getenv("API_URL", "http://127.0.0.1:8000")
     collector_token = os.getenv("COLLECTOR_TOKEN", "dev_collector_token_secret")
 
     print("=== Запуск демо-сборщика ===")
@@ -126,7 +126,8 @@ def main():
                 )
                 print(f"Тело ответа: {resp_json}")
                 # Записываем ID созданной записи для других демо-скриптов
-                with open("tmp_last_evidence_id.txt", "w") as f:
+                os.makedirs("tmp", exist_ok=True)
+                with open("tmp/last_evidence_id.txt", "w") as f:
                     f.write(statement_id)
             else:
                 print(f"Ошибка при отправке: {response.status_code}")

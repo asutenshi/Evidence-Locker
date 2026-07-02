@@ -27,7 +27,7 @@ def load_env():
 def main():
     load_env()
 
-    api_url = os.getenv("API_URL", "http://localhost:8000")
+    api_url = os.getenv("API_URL", "http://127.0.0.1:8000")
     teacher_token = os.getenv("TEACHER_TOKEN", "dev_teacher_token_secret")
 
     print("=== Запуск сценария проверки (Teacher Workflow) ===")
@@ -41,8 +41,8 @@ def main():
 
     # 1. Получаем ID свидетельства для проверки
     evidence_id = None
-    if os.path.exists("tmp_last_evidence_id.txt"):
-        with open("tmp_last_evidence_id.txt", "r") as f:
+    if os.path.exists("tmp/last_evidence_id.txt"):
+        with open("tmp/last_evidence_id.txt", "r") as f:
             evidence_id = f.read().strip()
         print(f"Обнаружен ID последнего созданного свидетельства: {evidence_id}")
 
@@ -143,8 +143,8 @@ def main():
                         "находится в списке проверенных (reviewed)!"
                     )
                     # Удалим временный файл
-                    if os.path.exists("tmp_last_evidence_id.txt"):
-                        os.remove("tmp_last_evidence_id.txt")
+                    if os.path.exists("tmp/last_evidence_id.txt"):
+                        os.remove("tmp/last_evidence_id.txt")
                 else:
                     print(
                         f"Внимание: Свидетельство {evidence_id} не найдено "
