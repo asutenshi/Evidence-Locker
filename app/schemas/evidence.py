@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -59,7 +59,10 @@ class XAPIStatement(BaseModel):
     verb: Verb
     object: ObjectBase
     context: Optional[Dict[str, Any]] = None
-    timestamp: datetime
+    timestamp: Optional[datetime] = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        description="Время совершения события (по умолчанию текущее время UTC)"
+    )
 
     actor_id: str = Field(default="")
     source_system: str = Field(default="")

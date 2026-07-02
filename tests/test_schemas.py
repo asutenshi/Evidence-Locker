@@ -104,3 +104,20 @@ def test_xapi_statement_missing_definition():
     statement = XAPIStatement(**data)
     assert statement.actor_id == "Ivan Ivanov"
     assert statement.object.definition is None
+
+
+def test_xapi_statement_missing_timestamp():
+    data = {
+        "id": str(uuid.uuid4()),
+        "actor": {"account": {"name": "Ivan Ivanov"}},
+        "verb": {"id": "http://adlnet.gov/expapi/verbs/completed"},
+        "object": {"id": "http://github.com/my-org/my-repo/commit/abc1234"},
+        "context": {
+            "extensions": {"source_system": "lms_alpha", "source_type": "moodle"}
+        },
+    }
+
+    statement = XAPIStatement(**data)
+    assert statement.timestamp is not None
+    assert isinstance(statement.timestamp, datetime)
+
