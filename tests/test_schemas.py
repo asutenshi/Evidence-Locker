@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 from pydantic import ValidationError
@@ -16,7 +16,7 @@ def test_xapi_statement_valid():
             "id": "http://example.com/activities/course-1",
             "definition": {"type": "http://adlnet.gov/expapi/activities/course"},
         },
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "context": {
             "extensions": {"source_system": "lms_alpha", "source_type": "moodle"}
         },
@@ -37,7 +37,7 @@ def test_xapi_statement_missing_source_system():
             "id": "http://example.com/activities/course-1",
             "definition": {"type": "http://adlnet.gov/expapi/activities/course"},
         },
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "context": {"extensions": {"source_type": "moodle"}},
     }
 
@@ -56,7 +56,7 @@ def test_xapi_statement_missing_source_type():
             "id": "http://example.com/activities/course-1",
             "definition": {"type": "http://adlnet.gov/expapi/activities/course"},
         },
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "context": {"extensions": {"source_system": "lms_alpha"}},
     }
 
@@ -75,7 +75,7 @@ def test_xapi_statement_invalid_actor():
             "id": "http://example.com/activities/course-1",
             "definition": {"type": "http://adlnet.gov/expapi/activities/course"},
         },
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "context": {
             "extensions": {"source_system": "lms_alpha", "source_type": "moodle"}
         },
@@ -87,3 +87,20 @@ def test_xapi_statement_invalid_actor():
     assert "Actor должен содержать хотя бы один валидный идентификатор" in str(
         exc_info.value
     )
+
+
+def test_xapi_statement_missing_definition():
+    data = {
+        "id": str(uuid.uuid4()),
+        "actor": {"account": {"name": "Ivan Ivanov"}},
+        "verb": {"id": "http://adlnet.gov/expapi/verbs/completed"},
+        "object": {"id": "http://github.com/my-org/my-repo/commit/abc1234"},
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "context": {
+            "extensions": {"source_system": "lms_alpha", "source_type": "moodle"}
+        },
+    }
+
+    statement = XAPIStatement(**data)
+    assert statement.actor_id == "Ivan Ivanov"
+    assert statement.object.definition is None

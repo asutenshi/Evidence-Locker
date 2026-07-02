@@ -44,17 +44,14 @@ def seed_data():
 
         status = random.choice(statuses)
 
-        context_dict = statement.context or {}
-        context_id = context_dict.get("project", "default_context")
-
         db_record = EvidenceRecord(
-            actor_id=statement.actor.account.name,
+            actor_id=statement.actor_id,
             verb_id=statement.verb.id,
             object_id=statement.object.id,
             timestamp=statement.timestamp,
             source_system=statement.source_system,
             source_type=statement.source_type,
-            context_id=context_id,
+            context_id=statement.context_id,
             note="Сгенерировано автоматически (Seed script)",
             raw_data=raw_data,
             review_status=status,

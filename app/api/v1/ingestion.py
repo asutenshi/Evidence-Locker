@@ -1,26 +1,22 @@
 import json
 import logging
+import sys
 
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
-from app.api.dependencies import verify_collector_token
-from app.db.database import SessionLocal
+from app.api.dependencies import get_db, verify_collector_token
 from app.db.models import EvidenceRecord, ReviewStatus
 from app.schemas.evidence import EvidenceResponse, XAPIStatement
 
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("evidence_locker")
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(logging.Formatter("%(message)s"))
+if not logger.handlers:
+    logger.addHandler(handler)
 
 router = APIRouter(prefix="/api/v1", tags=["Ingestion"])
-
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 @router.post(
